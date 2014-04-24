@@ -32,7 +32,7 @@ setup(
     author_email='jaeyoung@monodiary.net',
     maintainer='Jaeyoung Lee',
     maintainer_email='jaeyoung@monodiary.net',
-    url='https://github.com/jeyraof/naver-shopping-parser',
+    url='https://github.com/jeyraof/naver-cafe-parser',
     tests_require=[
         'pytest >= 2.3.0',
     ],
