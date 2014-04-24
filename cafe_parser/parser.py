@@ -51,10 +51,10 @@ class Article(object):
             self.article_id = article_id
 
         self.fetched = False
-        self._author = None
         self._title = None
-        self._created_at = None
+        self._author = None
         self._content = None
+        self.error = False
 
     def fetch(self):
         url = 'http://m.cafe.naver.com/ArticleRead.nhn?clubid=%s&articleid=%s' % (self.club_id, self.article_id)
@@ -62,21 +62,26 @@ class Article(object):
 
         dom = html.fromstring(html_string)
 
-        post_tit = dom.cssselect('div.post_tit h2')
-        if len(post_tit) > 0:
-            post_tit = post_tit[0]
-        self._title = post_tit.text.strip()
+        try:
+            post_tit = dom.cssselect('div.post_tit h2')
+            if len(post_tit) > 0:
+                post_tit = post_tit[0]
+            self._title = post_tit.text_content().strip()
 
-        # im = dom.cssselect('span.im')
-        # if len(im) > 0:
-        #     im = im[0]
-        # print im
+            nick = dom.cssselect('a.nick')
+            if len(nick) > 0:
+                nick = nick[0]
+            self._author = nick.text_content().strip()
 
-    @property
-    def author(self):
-        if not self.fetched:
-            self.fetch()
-        return self._author
+            post_content = dom.cssselect('div#postContent')
+            if len(post_content) > 0:
+                post_content = post_content[0]
+            self._content = html.tostring(post_content).strip()
+
+            self.fetched = True
+
+        except Exception as inst:
+            self.error = True
 
     @property
     def title(self):
@@ -85,10 +90,10 @@ class Article(object):
         return self._title
 
     @property
-    def created_at(self):
+    def author(self):
         if not self.fetched:
             self.fetch()
-        return self._created_at
+        return self._author
 
     @property
     def content(self):
