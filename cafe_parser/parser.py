@@ -16,8 +16,8 @@ class Cafe(object):
         self.club_id = self.get_club_id()
 
     def get_club_id(self):
-        url = self.build_url()
-        html_string = get_html_from_url(url)
+        url = 'http://m.cafe.naver.com/' + str(self.cafe_id)
+        html_string = get_html_from_url(url, headers={'Referer': 'http://search.naver.com'})
         dom = html.fromstring(html_string)
 
         ic_info = dom.cssselect('a#ic_info')
@@ -28,11 +28,35 @@ class Cafe(object):
 
         return club_id
 
-    def build_url(self):
-        if self.cafe_id:
-            return 'http://m.cafe.naver.com/' + str(self.cafe_id)
-        else:
-            return None
+    def get_board_list(self):
+        board_list = []
+        page = 0
+        while 1:
+            page += 1
+            url = 'http://m.cafe.naver.com/MenuList.nhn?firstViewingFavoriteCafe=false&' \
+                  'search.clubid=%s&' \
+                  'search.page=%s' % (self.club_id, page)
+            html_string = get_html_from_url(url, headers={'Referer': 'http://search.naver.com'})
+            dom = html.fromstring(html_string)
+
+            menu_list = dom.cssselect('ul.lst3 a.tit')
+            if len(menu_list) == 0:
+                break
+
+            for menu in menu_list:
+                href = menu.get('href', '')
+
+                if not 'menuid' in href:
+                    continue
+
+                param = param_to_dic(href)
+                menu_id = param.get('search.menuid', None)
+                board_name = menu.text_content().strip()
+                board_type = param.get('search.boardtype', None)
+
+                board_list.append((menu_id, board_name, board_type))
+
+        return board_list
 
 
 class Article(object):
