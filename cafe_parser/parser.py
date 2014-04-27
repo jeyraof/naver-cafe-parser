@@ -51,7 +51,12 @@ class Cafe(object):
 
                 param = param_to_dic(href)
                 menu_id = param.get('search.menuid', None)
-                board_name = menu.text_content().strip()
+                board_name = menu.xpath('text()')
+                if board_name:
+                    board_name = board_name[1].strip()
+                else:
+                    continue
+
                 board_type = param.get('search.boardtype', None)
 
                 board_list.append((menu_id, board_name, board_type))
