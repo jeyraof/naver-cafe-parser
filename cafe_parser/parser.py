@@ -112,6 +112,9 @@ class Article(object):
         self._content = None
         self.error = False
 
+    def __eq__(self, other):
+        return (self.club_id, self.article_id) == (other.club_id, other.article_id)
+
     def fetch(self):
         url = 'http://m.cafe.naver.com/ArticleRead.nhn?clubid=%s&articleid=%s' % (self.club_id, self.article_id)
         html_string = get_html_from_url(url=url, headers={'Referer': 'http://search.naver.com'})
