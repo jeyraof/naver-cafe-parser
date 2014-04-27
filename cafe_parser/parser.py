@@ -63,17 +63,44 @@ class Cafe(object):
 
         return board_list
 
+    def articles(self, board_id=None, page=1):
+        if board_id:
+            url = 'http://m.cafe.naver.com/ArticleList.nhn?' \
+                  'search.clubid=%s&' \
+                  'search.menuid=%s' % (self.club_id, board_id)
+        else:
+            url = 'http://m.cafe.naver.com/ArticleAllList.nhn?' \
+                  'search.clubid=%s&' % self.club_id
+        url += 'search.page=%s' % page
+
+        returnee = []
+
+        html_string = get_html_from_url(url, headers={'Referer': 'http://search.naver.com'})
+        dom = html.fromstring(html_string)
+
+        article_list = dom.cssselect('ul.lst4 li')
+        for article in article_list:
+            a = article.xpath('a[not (@class="cmt_num")]')
+            if a:
+                a = a[0]
+            else:
+                continue
+
+            returnee.append(Article(url=a.get('href', '')))
+
+        return returnee
+
 
 class Article(object):
     """
     article object
     """
 
-    def __init__(self, club_id, article_id, url=None):
+    def __init__(self, club_id=None, article_id=None, url=None):
         if url:
             param = param_to_dic(url)
-            self.club_id = param.get('club_id', None)
-            self.article_id = param.get('article_id', None)
+            self.club_id = param.get('clubid', None)
+            self.article_id = param.get('articleid', None)
 
         else:
             self.club_id = club_id
