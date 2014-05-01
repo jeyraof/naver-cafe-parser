@@ -13,13 +13,18 @@ class Cafe(object):
 
     def __init__(self, cafe_id):
         self.cafe_id = cafe_id.split('/')[-1] if '/' in cafe_id else cafe_id
-        self.club_id = self.get_club_id()
+        initial_dom = self.initial_dom()
+        self.title = self.get_cafe_title(initial_dom)
+        self.club_id = self.get_club_id(initial_dom)
 
-    def get_club_id(self):
+    def initial_dom(self):
         url = 'http://m.cafe.naver.com/' + str(self.cafe_id)
         html_string = get_html_from_url(url, headers={'Referer': 'http://search.naver.com'})
         dom = html.fromstring(html_string)
+        return dom
 
+    @staticmethod
+    def get_club_id(dom):
         ic_info = dom.cssselect('a#ic_info')
         ic_info = ic_info.pop() if len(ic_info) == 1 else None
 
@@ -27,6 +32,16 @@ class Cafe(object):
         club_id = club_id.split('=')[-1] if '=' in club_id else None
 
         return club_id
+
+    @staticmethod
+    def get_cafe_title(dom):
+        div_tit = dom.cssselect('div.cafe_name div.tit')
+        div_tit = div_tit.pop() if len(div_tit) == 1 else None
+
+        if div_tit is None:
+            return None
+
+        return div_tit.text_content().strip()
 
     def get_board_list(self):
         board_list = []
