@@ -4,6 +4,7 @@
 from lxml import html
 
 from .helper import param_to_dic, get_html_from_url
+from .exception import CafeNotFoundException
 
 
 class Cafe(object):
@@ -17,6 +18,12 @@ class Cafe(object):
         self.title = self.get_cafe_title(initial_dom)
         self.club_id = self.get_club_id(initial_dom)
 
+        if None in [self.title, self.club_id]:
+            raise CafeNotFoundException
+
+    def __repr__(self):
+        return u'<Cafe(cafe_id=%s)>' % self.cafe_id
+
     def initial_dom(self):
         url = 'http://m.cafe.naver.com/' + str(self.cafe_id)
         html_string = get_html_from_url(url, headers={'Referer': 'http://search.naver.com'})
@@ -26,9 +33,9 @@ class Cafe(object):
     @staticmethod
     def get_club_id(dom):
         ic_info = dom.cssselect('a#ic_info')
-        ic_info = ic_info.pop() if len(ic_info) == 1 else None
+        ic_info = ic_info.pop() if len(ic_info) == 1 else {}
 
-        club_id = ic_info.get('href', None)
+        club_id = ic_info.get('href', '')
         club_id = club_id.split('=')[-1] if '=' in club_id else None
 
         return club_id
